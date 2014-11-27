@@ -72,14 +72,14 @@ CREATE TABLE "texts_data_word" (
 """
 
 @implementer(interfaces.IContribution)
-class Text(Contribution, CustomModelMixin):
+class Text(CustomModelMixin, Contribution):
     pk = Column(Integer, ForeignKey('contribution.pk'), primary_key=True)
     ord = Column(Integer, nullable=False)
     russian = Column(Unicode)
 
 
 @implementer(interfaces.ISentence)
-class Line(Sentence, CustomModelMixin):
+class Line(CustomModelMixin, Sentence):
     pk = Column(Integer, ForeignKey('sentence.pk'), primary_key=True)
     ord = Column(Integer, nullable=False)
     text_pk = Column(Integer, ForeignKey('text.pk'))
@@ -100,7 +100,7 @@ class WordInLine(Base, IdNameDescriptionMixin):
 
 
 @implementer(interfaces.IUnit)
-class Morpheme(Unit, CustomModelMixin):
+class Morpheme(CustomModelMixin, Unit):
     pk = Column(Integer, ForeignKey('unit.pk'), primary_key=True)
     pos = Column(Unicode)
     notes = Column(Unicode)
