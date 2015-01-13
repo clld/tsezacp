@@ -1,28 +1,14 @@
-import os
-
 from setuptools import setup, find_packages
 
-
-here = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(here, 'README.md')).read()
-
 requires = [
-    'clld',
+    'clld>=0.28',
     'clldmpg',
-    'pyramid',
-    'SQLAlchemy',
-    'transaction',
-    'pyramid_tm',
-    'zope.sqlalchemy',
-    'gunicorn',
-    'psycopg2',
-    'waitress',
     ]
 
 setup(name='tsezacp',
       version='0.0',
       description='tsezacp',
-      long_description=README,
+      long_description='',
       classifiers=[
         "Programming Language :: Python",
         "Framework :: Pyramid",
