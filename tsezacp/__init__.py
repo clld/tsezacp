@@ -1,8 +1,9 @@
 from functools import partial
 
 from sqlalchemy.orm import joinedload_all
+from pyramid.config import Configurator
 
-from clld.web.app import get_configurator, CtxFactoryQuery, menu_item
+from clld.web.app import CtxFactoryQuery, menu_item
 from clld.db.models.common import Contribution, Unit
 from clld.interfaces import ICtxFactoryQuery
 
@@ -36,14 +37,13 @@ class AcpCtxFactoryQuery(CtxFactoryQuery):
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    config = get_configurator('tsezacp', (AcpCtxFactoryQuery(), ICtxFactoryQuery), settings=settings)
+    config = Configurator(settings=settings)
+    config.include('clldmpg')
+    config.registry.registerUtility(AcpCtxFactoryQuery(), ICtxFactoryQuery)
     config.register_menu(
         ('dataset', partial(menu_item, 'dataset', label='Home')),
         ('contributions', partial(menu_item, 'contributions')),
         ('units', partial(menu_item, 'units')),
-        #('examples', partial(menu_item, 'sentences')),
+        ('examples', partial(menu_item, 'sentences')),
     )
-    config.include('clldmpg')
-    config.include('tsezacp.datatables')
-    config.include('tsezacp.adapters')
     return config.make_wsgi_app()

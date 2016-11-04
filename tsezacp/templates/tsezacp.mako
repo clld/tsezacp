@@ -1,11 +1,8 @@
 <%inherit file="app.mako"/>
 
-##
-## define app-level blocks:
-##
-<%block name="header">
-    <a href="${request.route_url('dataset')}">
-        <img src="${request.static_url('tsezacp:static/header.gif')}"/>
+<%block name="brand">
+    <a class="brand" href="${request.route_url('dataset')}">
+        Tsez Annotated Corpus Project
     </a>
 </%block>
 

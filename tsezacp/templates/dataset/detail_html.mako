@@ -18,7 +18,8 @@
     Abdulaev and Abdullaev (2010). The intended audience of this book publication
     was primarily the Tsez-speaking community and Russian-speaking readers interested
     in folklore. Work on the book was sponsored by the
-    Max Planck Institute for Evolutionary Anthropology (MPI-EVA) and part of the
+    ${h.external_link('http://www.eva.mpg.de', label='Max Planck Institute for Evolutionary Anthropology (MPI-EVA)')}
+    and part of the
     agreement was that our institute would be allowed to post on-line a version of
     the text suitable for scientific use by linguists, with morpheme glosses and an
     English translation added to the materials available in the book. The material
@@ -33,6 +34,5 @@
 </p>
 <p>
     Questions, corrections, suggestions for improvements, etc. should be addressed
-    to Bernard Comrie at comrie@eva.mpg.de or comrie@linguistics.ucsb.edu.
+    to Bernard Comrie at comrie@linguistics.ucsb.edu.
 </p>
-

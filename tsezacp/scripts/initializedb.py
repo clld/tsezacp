@@ -6,26 +6,28 @@ from sqlalchemy import create_engine
 from clld.scripts.util import initializedb, Data
 from clld.db.meta import DBSession
 from clld.db.models import common
-from clld.db.util import icontains
 
 import tsezacp
 from tsezacp import models
 
 
 def main(args):
-    db = create_engine('sqlite:///' + args.data_file('sqlite3.db').abspath())
+    db = create_engine('sqlite:///' + args.data_file('sqlite3.db').resolve().as_posix())
 
     data = Data()
 
     dataset = common.Dataset(
         id=tsezacp.__name__,
         name="The Tsez Annotated Corpus Project",
-        publisher_name ="Max Planck Institute for Evolutionary Anthropology",
+        publisher_name="Max Planck Institute for Evolutionary Anthropology",
         publisher_place="Leipzig",
         publisher_url="http://www.eva.mpg.de",
-        license="http://creativecommons.org/licenses/by/3.0/",
-        contact='comrie@eva.mpg.de',
-        domain='tsezacp.clld.org')
+        contact='forkel@shh.mpg.de',
+        domain='tsezacp.clld.org',
+        license='http://creativecommons.org/licenses/by/4.0/',
+        jsondata={
+            'license_icon': 'cc-by.png',
+            'license_name': 'Creative Commons Attribution 4.0 International License'})
     DBSession.add(dataset)
 
     #
@@ -101,8 +103,8 @@ def prime_cache(args):
     """
     for miw, m in DBSession.query(models.MorphemeInWord, models.Morpheme)\
             .filter(models.Morpheme.name == models.MorphemeInWord.name)\
-            .filter(icontains(models.Morpheme.description, models.MorphemeInWord.normgloss))\
-            .filter(icontains(models.Morpheme.pos, models.MorphemeInWord.pos)):
+            .filter(models.Morpheme.description.ilike('%' + models.MorphemeInWord.normgloss + '%'))\
+            .filter(models.Morpheme.pos.ilike('%' + models.MorphemeInWord.pos + '%')):
         miw.morpheme = m
 
 

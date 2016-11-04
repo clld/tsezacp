@@ -133,7 +133,11 @@
 
 % for line in ctx.lines:
 <div id="l${line.id}">
-    <p class="tsez">${str(line.ord)}. ${line.name}</p>
+    <h3 class="tsez">
+        ${str(line.ord)}. ${line.name}
+        <a href="#top" title="go to top of the page" style="vertical-align: bottom">&#x21eb;</a>
+        <a class="headerlink" href="#l${line.id}" title="Permalink to this headline">¶</a>
+    </h3>
     <div class="annot">
         <table frame="border" border="0">
             <tr class="tx">
