@@ -1,12 +1,12 @@
-from clldutils.path import Path
+import pytest
 
-from clld.tests.util import TestWithApp
-
-import tsezacp
+pytest_plugins = ['clld']
 
 
-class Tests(TestWithApp):
-    __cfg__ = Path(tsezacp.__file__).parent.joinpath('..', 'development.ini').resolve()
-
-    def test_home(self):
-        res = self.app.get('/', status=200)
+@pytest.mark.parametrize(
+    "method,path",
+    [
+        ('get_html', '/'),
+    ])
+def test_pages(app, method, path):
+    getattr(app, method)(path)

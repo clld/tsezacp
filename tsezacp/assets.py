@@ -1,9 +1,9 @@
 from clld.web.assets import environment
-from path import path
+from clldutils.path import Path
 
 import tsezacp
 
 
 environment.append_path(
-    path(tsezacp.__file__).dirname().joinpath('static'), url='/tsezacp:static/')
+    str(Path(tsezacp.__file__).parent.joinpath('static')), url='/tsezacp:static/')
 environment.load_path = list(reversed(environment.load_path))
