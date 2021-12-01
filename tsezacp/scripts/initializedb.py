@@ -1,9 +1,8 @@
-from __future__ import unicode_literals
 import sys
 
 from sqlalchemy import create_engine
 
-from clld.scripts.util import initializedb, Data
+from clld.cliutil import Data
 from clld.db.meta import DBSession
 from clld.db.models import common
 
@@ -106,8 +105,3 @@ def prime_cache(args):
             .filter(models.Morpheme.description.ilike('%' + models.MorphemeInWord.normgloss + '%'))\
             .filter(models.Morpheme.pos.ilike('%' + models.MorphemeInWord.pos + '%')):
         miw.morpheme = m
-
-
-if __name__ == '__main__':
-    initializedb(create=main, prime_cache=prime_cache)
-    sys.exit(0)

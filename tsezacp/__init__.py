@@ -1,6 +1,6 @@
 from functools import partial
 
-from sqlalchemy.orm import joinedload_all
+from sqlalchemy.orm import joinedload
 from pyramid.config import Configurator
 
 from clld.web.app import CtxFactoryQuery, menu_item
@@ -26,11 +26,15 @@ class AcpCtxFactoryQuery(CtxFactoryQuery):
         refinements of their own.
         """
         if model == Unit:
-            return query.options(joinedload_all(
-                models.Morpheme.occurrences, models.MorphemeInWord.word, models.WordInLine.line, models.Line.text))
+            return query.options(joinedload(
+                models.Morpheme.occurrences).joinedload(
+                models.MorphemeInWord.word).joinedload(
+                models.WordInLine.line).joinedload(models.Line.text))
         if model == Contribution:
-            return query.options(joinedload_all(
-                models.Text.lines, models.Line.words, models.WordInLine.morphemes, models.MorphemeInWord.morpheme))
+            return query.options(joinedload(
+                models.Text.lines).joinedload(
+                models.Line.words).joinedload(
+                models.WordInLine.morphemes).joinedload(models.MorphemeInWord.morpheme))
         return query
 
 

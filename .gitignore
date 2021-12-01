@@ -31,3 +31,4 @@ nosetests.xml
 .project
 .pydevproject
 .idea
+geckodriver.log
