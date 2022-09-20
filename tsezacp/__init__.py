@@ -29,7 +29,8 @@ class AcpCtxFactoryQuery(CtxFactoryQuery):
             return query.options(joinedload(
                 models.Morpheme.occurrences).joinedload(
                 models.MorphemeInWord.word).joinedload(
-                models.WordInLine.line).joinedload(models.Line.text))
+                models.WordInLine.line).joinedload(
+                models.Line.text))
         if model == Contribution:
             return query.options(joinedload(
                 models.Text.lines).joinedload(
@@ -47,7 +48,7 @@ def main(global_config, **settings):
     config.register_menu(
         ('dataset', partial(menu_item, 'dataset', label='Home')),
         ('contributions', partial(menu_item, 'contributions')),
-        ('units', partial(menu_item, 'units')),
         ('examples', partial(menu_item, 'sentences')),
+        ('units', partial(menu_item, 'units')),
     )
     return config.make_wsgi_app()

@@ -1,98 +1,99 @@
-import sys
-
-from sqlalchemy import create_engine
+import collections
 
 from clld.cliutil import Data
 from clld.db.meta import DBSession
 from clld.db.models import common
+from pyigt import IGT
+from markdown import markdown
 
 import tsezacp
 from tsezacp import models
 
 
 def main(args):
-    db = create_engine('sqlite:///' + args.data_file('sqlite3.db').resolve().as_posix())
-
     data = Data()
+    cldf = args.cldf
 
     dataset = common.Dataset(
         id=tsezacp.__name__,
-        name="The Tsez Annotated Corpus Project",
+        name=cldf.properties['dc:title'],
+        description=markdown(cldf.properties['dc:description']),
         publisher_name="Max Planck Institute for Evolutionary Anthropology",
         publisher_place="Leipzig",
         publisher_url="http://www.eva.mpg.de",
-        contact='forkel@shh.mpg.de',
+        contact='dlce.rdm@eva.mpg.de',
         domain='tsezacp.clld.org',
         license='http://creativecommons.org/licenses/by/4.0/',
         jsondata={
+            'source_citation': cldf.properties['dc:bibliographicCitation'],
+            'data_citation': input('data citation: '),
             'license_icon': 'cc-by.png',
             'license_name': 'Creative Commons Attribution 4.0 International License'})
     DBSession.add(dataset)
+    DBSession.add(common.Editor(
+        dataset=dataset,
+        contributor=common.Contributor(id='comrie', name='Bernard Comrie')))
 
-    #
-    # TODO: add editors!
-    #
+    for o in cldf.objects('LanguageTable'):
+        data.add(common.Language, o.id, id=o.id, name=o.cldf.name)
 
-    lang = data.add(common.Language, 'tsez', id='tsez', name='Tsez')
-
-    for row in db.execute('select * from texts_data_text'):
+    for o in cldf.objects('ContributionTable'):
         data.add(
-            models.Text, row.id,
-            id=str(row.Number),
-            ord=row.Number,
-            name=row.Title_in_Tsez,
-            description=row.Title_in_English,
-            russian=row.Title_in_Russian)
+            models.Text, o.id,
+            id=o.id,
+            ord=int(o.id),
+            name=o.cldf.name,
+            description=o.cldf.description)
 
-    for row in db.execute('select * from texts_data_line'):
-        text = data['Text'][row.to_Text_id]
-        data.add(
-            models.Line, row.id,
-            id='%s-%s' % (text.id, row.Line_Position),
-            ord=row.Line_Position,
-            language=lang,
-            text=text,
-            name=row.Tsez_Line,
-            description=row.English_Translation,
-            russian=row.Russian_Translation)
+    for o in cldf.objects('ExampleTable'):
+        igt = IGT(phrase=o.cldf.analyzedWord, gloss=o.cldf.gloss)
+        tid, _, lid = o.id.partition('-')
+        l = data.add(
+            models.Line, o.id,
+            id=o.id,
+            ord=int(tid) * 1000 + int(lid),
+            language=data['Language']['dido1241'],
+            text=data['Text'][o.cldf.contributionReference],
+            name=o.cldf.primaryText,
+            description=o.cldf.translatedText,
+            analyzed='\t'.join(o.cldf.analyzedWord),
+            gloss='\t'.join(o.cldf.gloss),
+            russian=o.data['Russian_Translation'])
 
-    for row in db.execute('select w.id, w.to_Line_id, w.Lex_Position, w.Word_in_Phrase, w.Word_Clear, m.id, m.Position, m.Value, m.Gloss, m.Part_of_Speech from texts_data_word as w, texts_data_morpheme as m where m.to_Word_id = w.id order by w.to_Line_id, w.Lex_Position, m.Position'):
-        wid, lid, wpos, wname, wclear, mid, mpos, mname, mgloss, mpartofspeech = row
-        if wid in data['WordInLine']:
-            w = data['WordInLine'][wid]
-        else:
+        for i, (gw, poss) in enumerate(zip(igt.glossed_words, o.data['Part_of_Speech']), start=1):
+            if poss is None:
+                break
+
             w = data.add(
-                models.WordInLine, wid,
-                id=str(wid),
-                ord=wpos,
-                name=wname,
-                description=wclear,
-                line=data['Line'][lid])
+                models.WordInLine, i,
+                id='{}-{}'.format(o.id, i),
+                ord=i,
+                name=gw.word_from_morphemes,
+                #description=wclear,
+                line=l)
 
-        w.morphemes.append(models.MorphemeInWord(
-            id=str(mid),
-            ord=mpos,
-            name=mname,
-            description=mgloss,
-            normgloss=mgloss[1:] if mgloss.startswith('-') else mgloss,
-            pos=mpartofspeech.replace('-', '').strip()))
+            for j, (gm, pos) in enumerate(zip(gw.glossed_morphemes, poss.split('-')), start=1):
+                w.morphemes.append(models.MorphemeInWord(
+                    id='{}-{}-{}'.format(o.id, i, j),
+                    ord=j,
+                    name=gm.morpheme,
+                    description=gm.gloss,
+                    pos=pos,
+                    normpos=pos.replace('pl', '').replace('1', '').replace('2', '').replace('3', '').replace('4', '')
+                ))
 
-    for lid in sorted(data['Line'].keys()):
-        line = data['Line'][lid]
-        #print line.name
-        #print '  '.join(w.name for w in line.words)
-        line.analyzed = '\t'.join('\t'.join(m.name for m in w.morphemes) for w in line.words)
-        line.gloss = '\t'.join('\t'.join(m.description for m in w.morphemes) for w in line.words)
+    senses = collections.defaultdict(set)
+    for r in cldf.iter_rows('SenseTable', 'entryReference', 'description'):
+        senses[r['entryReference']].add(r['description'])
 
-    for row in db.execute('select * from texts_data_glossary'):
+    for o in cldf.objects('EntryTable'):
         data.add(
-            models.Morpheme, row.id,
-            id=str(row.id),
-            name=row.Value,
-            language=lang,
-            description=row.Gloss,
-            notes=row.Notes,
-            pos=row.Part_of_Speech.replace('-', '').strip())
+            models.Morpheme, o.id,
+            id=o.id,
+            name=o.cldf.headword,
+            language=data['Language']['dido1241'],
+            description='; '.join(sorted(senses[o.id])),
+            pos=o.cldf.partOfSpeech)
 
 
 def prime_cache(args):
@@ -102,6 +103,5 @@ def prime_cache(args):
     """
     for miw, m in DBSession.query(models.MorphemeInWord, models.Morpheme)\
             .filter(models.Morpheme.name == models.MorphemeInWord.name)\
-            .filter(models.Morpheme.description.ilike('%' + models.MorphemeInWord.normgloss + '%'))\
-            .filter(models.Morpheme.pos.ilike('%' + models.MorphemeInWord.pos + '%')):
+            .filter(models.Morpheme.pos == models.MorphemeInWord.normpos):
         miw.morpheme = m

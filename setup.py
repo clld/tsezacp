@@ -21,6 +21,7 @@ setup(
     install_requires=[
         'clld>=9.2.1',
         'clldmpg>=4.2',
+        'pyigt',
         'sqlalchemy',
         'waitress',
     ],

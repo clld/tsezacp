@@ -27,11 +27,11 @@ msgstr "Text"
 
 #: tsezacp/__init__.py:16
 msgid "Units"
-msgstr "Glossary"
+msgstr "Morphemes"
 
 #: tsezacp/__init__.py:17
 msgid "Unit"
-msgstr "Glossary entry"
+msgstr "Morpheme"
 
 #: tsezacp/__init__.py:18
 msgid "Sentence"

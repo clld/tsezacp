@@ -10,16 +10,15 @@ class Texts(datatables.Contributions):
             IntegerIdCol(self, 'id', sTitle='Number'),
             LinkCol(self, 'name', sTitle='Title'),
             Col(self, 'description', sTitle='English translation'),
-            Col(self, 'russian', sTitle='Russian translation', model_col=models.Text.russian),
         ]
 
 
 class Glossary(datatables.Units):
     def col_defs(self):
         return [
-            LinkCol(self, 'name', sTitle='Value'),
-            Col(self, 'description', sTitle='Gloss'),
-            Col(self, 'pos', sTitle='Part of speech', model_col=models.Morpheme.pos)
+            LinkCol(self, 'name', sTitle='Morpheme'),
+            Col(self, 'pos', sTitle='Part of speech', model_col=models.Morpheme.pos),
+            Col(self, 'description', sTitle='Glosses'),
         ]
 
 
