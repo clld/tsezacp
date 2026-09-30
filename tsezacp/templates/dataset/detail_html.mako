@@ -3,9 +3,7 @@
 <%def name="sidebar()">
     <div class="well">
         <h3>How to cite</h3>
-        <p>If you use this data please cite</p>
-        <blockquote>${req.dataset.jsondata['data_citation']}</blockquote>
-        <p>as well as the original source</p>
+        <p>If you use this data please cite the dataset deposited on Zenodo (see <a href="download">download</a>) as well as the original source</p>
         <blockquote>${req.dataset.jsondata['source_citation']}</blockquote>
     </div>
 </%def>

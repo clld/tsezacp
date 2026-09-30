@@ -26,7 +26,6 @@ def main(args):
         license='http://creativecommons.org/licenses/by/4.0/',
         jsondata={
             'source_citation': cldf.properties['dc:bibliographicCitation'],
-            'data_citation': input('data citation: '),
             'license_icon': 'cc-by.png',
             'license_name': 'Creative Commons Attribution 4.0 International License'})
     DBSession.add(dataset)
@@ -46,41 +45,43 @@ def main(args):
             description=o.cldf.description)
 
     for o in cldf.objects('ExampleTable'):
-        igt = IGT(phrase=o.cldf.analyzedWord, gloss=o.cldf.gloss)
-        tid, _, lid = o.id.partition('-')
-        l = data.add(
-            models.Line, o.id,
-            id=o.id,
-            ord=int(tid) * 1000 + int(lid),
-            language=data['Language']['dido1241'],
-            text=data['Text'][o.cldf.contributionReference],
-            name=o.cldf.primaryText,
-            description=o.cldf.translatedText,
-            analyzed='\t'.join(o.cldf.analyzedWord),
-            gloss='\t'.join(o.cldf.gloss),
-            russian=o.data['Russian_Translation'])
+        full = o.related('exampleReference')
+        if full:
+            tid, _, lid = full.id.partition('-')
+            l = data.add(
+                models.Line, full.id,
+                id=full.id,
+                ord=full.cldf.position[0] * 1000 + full.cldf.position[1],
+                language=data['Language']['dido1241'],
+                text=data['Text'][full.cldf.contributionReference],
+                name=full.cldf.primaryText,
+                description=full.cldf.translatedText,
+                analyzed='\t'.join(full.cldf.analyzedWord),
+                gloss='\t'.join(full.cldf.gloss),
+                russian=o.cldf.translatedText)
 
-        for i, (gw, poss) in enumerate(zip(igt.glossed_words, o.data['Part_of_Speech']), start=1):
-            if poss is None:
-                break
+            igt = IGT(phrase=full.cldf.analyzedWord, gloss=full.cldf.gloss)
+            for i, (gw, poss) in enumerate(zip(igt.glossed_words, full.data['Part_of_Speech']), start=1):
+                if poss is None:
+                    break
 
-            w = data.add(
-                models.WordInLine, i,
-                id='{}-{}'.format(o.id, i),
-                ord=i,
-                name=gw.word_from_morphemes,
-                #description=wclear,
-                line=l)
+                w = data.add(
+                    models.WordInLine, i,
+                    id='{}-{}'.format(full.id, i),
+                    ord=i,
+                    name=gw.word_from_morphemes,
+                    #description=wclear,
+                    line=l)
 
-            for j, (gm, pos) in enumerate(zip(gw.glossed_morphemes, poss.split('-')), start=1):
-                w.morphemes.append(models.MorphemeInWord(
-                    id='{}-{}-{}'.format(o.id, i, j),
-                    ord=j,
-                    name=gm.morpheme,
-                    description=gm.gloss,
-                    pos=pos,
-                    normpos=pos.replace('pl', '').replace('1', '').replace('2', '').replace('3', '').replace('4', '')
-                ))
+                for j, (gm, pos) in enumerate(zip(gw.glossed_morphemes, poss.split('-')), start=1):
+                    w.morphemes.append(models.MorphemeInWord(
+                        id='{}-{}-{}'.format(full.id, i, j),
+                        ord=j,
+                        name=gm.morpheme,
+                        description=gm.gloss,
+                        pos=pos,
+                        normpos=pos.replace('pl', '').replace('1', '').replace('2', '').replace('3', '').replace('4', '')
+                    ))
 
     senses = collections.defaultdict(set)
     for r in cldf.iter_rows('SenseTable', 'entryReference', 'description'):

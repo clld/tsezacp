@@ -19,7 +19,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'clld>=9.2.1',
+        'clld>=9.2.2',
         'clldmpg>=4.2',
         'pyigt',
         'sqlalchemy',
