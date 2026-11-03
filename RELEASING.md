@@ -2,6 +2,7 @@
 
 ```shell
 git clone https://github.com/clld/tsezacp
+git clone --branch v2.0.1 --depth 1 https://github.com/cldf-datasets/tsezacp tsezacp-cldf
 cd tsezacp
 pip install -e .[test]
 ```
@@ -18,8 +19,6 @@ pip freeze > requirements.txt
 
 Store a db dump:
 ```shell
-pg_dump -xO tsezacp > tsezacp.sql
-zip tsezacp.sql.zip tsezacp.sql
-rm tsezacp.sql
+pg_dump -xO --compress gzip:9 tsezacp > tsezacp.sql.gz
 ```
 
